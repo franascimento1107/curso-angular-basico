@@ -8,7 +8,7 @@
     <ul class="navbar-nav mr-auto">
       <li class="nav-item" [routerLinkActive]="['active']"
         *ngFor="let navItem of navItems">
-        <a class="nav-link" [routerLink]="navItem.path" (click)="isMenuCollapsed = true"><span class="sr-only">{{ navItem.path }}</span></a>
+        <a class="nav-link" [routerLink]="navItem.path" (click)="isMenuCollapsed = true"><span>{{ navItem.text }}</span></a>
       </li>
     </ul>
   </div>
