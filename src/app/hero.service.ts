@@ -40,7 +40,9 @@ export class HeroService {
 
   addHero(hero: Hero): Observable<Hero> {
     return this.http.post<Hero>(this.heroesUrl, hero, this.httpOptions).pipe(
-      tap((newHero: Hero) => this.log(`Adicionou herói com id=${newHero.id} do backend`)),
+      tap((newHero: Hero) =>
+        this.log(`Adicionou herói com id=${newHero.id} do backend`)
+      ),
       catchError(this.handleError<Hero>('addHero'))
     );
   }
@@ -64,9 +66,18 @@ export class HeroService {
   }
 
   searchHero(term: string): Observable<Hero[]> {
-    return this.http.get<Hero[]>(this.heroesUrl).pipe(
-      tap(() => this.log('Retornou a lista de heróis do backend')),
-      catchError(this.handleError<Hero[]>('getHeroes', []))
+    if (!term.trim()) {
+      return of([]);
+    }
+    const url = `${this.heroesUrl}/?name=${term.trim()}`;
+
+    return this.http.get<Hero[]>(url, this.httpOptions).pipe(
+      tap((heroes) =>
+        heroes && heroes.length
+          ? this.log(`Retornou a lista de heróis semelhantes a "${term}" do backend`)
+          : this.log(`Não encontrou herói semelhantes a "${term}" do backend`)
+      ),
+      catchError(this.handleError<Hero[]>('searchHero', []))
     );
   }
 
