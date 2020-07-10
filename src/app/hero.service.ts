@@ -3,7 +3,7 @@ import { Hero } from './hero.model';
 import { Heroes } from './mock-heroes';
 import { Observable, of } from 'rxjs';
 import { MessageService } from './message.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { tap, catchError } from 'rxjs/operators';
 
@@ -12,6 +12,10 @@ import { tap, catchError } from 'rxjs/operators';
 })
 export class HeroService {
   private heroesUrl = `${environment.baseUrl}/heroes`;
+
+  private httpOptions = {
+    headers: new HttpHeaders({ 'Content-Type': 'aplication/json' }),
+  };
 
   constructor(
     public messageService: MessageService,
@@ -31,6 +35,38 @@ export class HeroService {
     return this.http.get<Hero>(url).pipe(
       tap(() => this.log(`Obteve o herói id=${id} do backend`)),
       catchError(this.handleError<Hero>('getHero'))
+    );
+  }
+
+  addHero(hero: Hero): Observable<Hero> {
+    return this.http.post<Hero>(this.heroesUrl, hero, this.httpOptions).pipe(
+      tap((newHero: Hero) => this.log(`Adicionou herói com id=${newHero.id} do backend`)),
+      catchError(this.handleError<Hero>('addHero'))
+    );
+  }
+
+  updateHero(hero: Hero): Observable<Hero> {
+    const url = `${this.heroesUrl}/${hero.id}`;
+
+    return this.http.put<Hero>(url, hero, this.httpOptions).pipe(
+      tap(() => this.log(`Atualizou o herói id=${hero.id} do backend`)),
+      catchError(this.handleError<Hero>('updateHero'))
+    );
+  }
+
+  deleteHero(hero: Hero): Observable<any> {
+    const url = `${this.heroesUrl}/${hero.id}`;
+
+    return this.http.delete<any>(url, this.httpOptions).pipe(
+      tap(() => this.log(`Removido o herói id=${hero.id} do backend`)),
+      catchError(this.handleError<Hero>('deleteHero'))
+    );
+  }
+
+  searchHero(term: string): Observable<Hero[]> {
+    return this.http.get<Hero[]>(this.heroesUrl).pipe(
+      tap(() => this.log('Retornou a lista de heróis do backend')),
+      catchError(this.handleError<Hero[]>('getHeroes', []))
     );
   }
 
