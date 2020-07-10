@@ -14,7 +14,10 @@ export class HeroService {
   private heroesUrl = `${environment.baseUrl}/heroes`;
 
   private httpOptions = {
-    headers: new HttpHeaders({ 'Content-Type': 'aplication/json' }),
+    headers: new HttpHeaders({
+      'Content-Type': 'aplication/json',
+      Authorization: localStorage.getItem('token'),
+    }),
   };
 
   constructor(
@@ -23,7 +26,7 @@ export class HeroService {
   ) {}
 
   getHeroes(): Observable<Hero[]> {
-    return this.http.get<Hero[]>(this.heroesUrl).pipe(
+    return this.http.get<Hero[]>(this.heroesUrl, this.httpOptions).pipe(
       tap(() => this.log('Retornou a lista de heróis do backend')),
       catchError(this.handleError<Hero[]>('getHeroes', []))
     );
@@ -32,7 +35,7 @@ export class HeroService {
   getHero(id: number): Observable<Hero> {
     const url = `${this.heroesUrl}/${id}`;
 
-    return this.http.get<Hero>(url).pipe(
+    return this.http.get<Hero>(url, this.httpOptions).pipe(
       tap(() => this.log(`Obteve o herói id=${id} do backend`)),
       catchError(this.handleError<Hero>('getHero'))
     );
@@ -65,17 +68,19 @@ export class HeroService {
     );
   }
 
-  searchHero(term: string): Observable<Hero[]> {
-    if (!term.trim()) {
+  searchHeroes(term: string): Observable<Hero[]> {
+    if (!(term && term.trim())) {
+      this.log('Não informou critério para pesquisa');
       return of([]);
     }
+
     const url = `${this.heroesUrl}/?name=${term.trim()}`;
 
     return this.http.get<Hero[]>(url, this.httpOptions).pipe(
       tap((heroes) =>
         heroes && heroes.length
-          ? this.log(`Retornou a lista de heróis semelhantes a "${term}" do backend`)
-          : this.log(`Não encontrou herói semelhantes a "${term}" do backend`)
+          ? this.log(`Retornou os ${heroes.length} heróis para "${term}" `)
+          : this.log(`Não encontrou herói semelhantes a "${term}" `)
       ),
       catchError(this.handleError<Hero[]>('searchHero', []))
     );
